@@ -1,5 +1,6 @@
 #pragma once
 #include <cmath>
+#include <stdint.h>
 #include <vector>
 #include "verlet_object.hpp"
 
@@ -18,9 +19,15 @@ class Solver {
     }
 
     void update(float dt) {
-      applyGravity();
-      applyConstraint();
-      updatePositions(dt);
+      const uint32_t sub_steps = 2;
+      const float sub_dt = dt / (float) sub_steps;
+
+      for (uint32_t i(sub_steps); i--;) {
+        applyGravity();
+        checkCollisions();
+        applyConstraint();
+        updatePositions(sub_dt);
+      }
     }
 
     std::vector<VerletObject> getObjects() const {
@@ -50,6 +57,27 @@ class Solver {
         if (dist > (constraintRadius - obj.radius)) {
           vec2 n = to_obj / dist;
           obj.position_current = constraintPos - n * (constraintRadius - obj.radius);
+        }
+      }
+    }
+
+    void checkCollisions() {
+      for (uint32_t i(0); i < objects.size(); ++i) {
+        VerletObject &object_1 = objects[i];
+
+        for (uint32_t j(i + 1); j < objects.size(); ++j) {
+          VerletObject &object_2 = objects[j];
+          const vec2 collision_axis = object_1.position_current - object_2.position_current;
+          const float dist = sqrt(collision_axis.x * collision_axis.x + collision_axis.y * collision_axis.y);
+          const float min_dist = object_1.radius + object_2.radius;
+
+          if (dist < min_dist) {
+            const vec2 n = collision_axis / dist;
+            const float delta = min_dist - dist;
+
+            object_1.position_current += n * delta * 0.5f;
+            object_2.position_current -= n * delta * 0.5f;
+          }
         }
       }
     }
