@@ -1,6 +1,7 @@
 #include "SFML/Window.hpp"
 #include "SFML/System.hpp"
 #include "solver.hpp"
+#include "link.hpp"
 #include <iostream>
 
 float randBetween(int min, int max) {
@@ -66,7 +67,7 @@ int main() {
 
     window.clear(sf::Color(55, 55, 55));
 
-    sf::CircleShape constraint{400.f};
+    sf::CircleShape constraint{constraintRadius};
     constraint.setOrigin(constraintRadius, constraintRadius);
     constraint.setPosition(screenCenter.x, screenCenter.y);
     constraint.setFillColor(sf::Color::Black);
