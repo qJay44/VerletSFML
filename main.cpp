@@ -2,6 +2,7 @@
 #include "SFML/System.hpp"
 #include "solver.hpp"
 #include "link.hpp"
+#include "verlet_object.hpp"
 #include <iostream>
 
 float randBetween(int min, int max) {
@@ -55,13 +56,15 @@ int main() {
         const float mouseX = (float) sf::Mouse::getPosition(window).x;
         const float mouseY = (float) sf::Mouse::getPosition(window).y;
 
-        solver.addObject({
-            { mouseX, mouseY },
-            { mouseX, mouseY },
-            { 0.f, 0.f },
-            randBetween(1, 20),
-            getColor(clock2.getElapsedTime().asSeconds())
-        });
+        VerletObject obj{
+          { mouseX, mouseY },
+          { mouseX, mouseY },
+          { 0.f, 0.f },
+          randBetween(1, 20),
+          getColor(clock2.getElapsedTime().asSeconds())
+        };
+
+        solver.addObject(obj);
       }
     }
 

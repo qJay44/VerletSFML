@@ -2,6 +2,7 @@
 #include "utils.hpp"
 #include "verlet_object.hpp"
 #include <cmath>
+#include <iostream>
 
 struct Link {
   VerletObject &obj1;
@@ -9,6 +10,7 @@ struct Link {
   float target_dist;
 
   void apply() {
+    std::cout << obj1.position_current.x << "\n";
     const vec2 axis = obj1.position_current - obj2.position_current;
     const float dist = sqrt(axis.x * axis.x + axis.y * axis.y);
     const vec2 n = axis / dist;

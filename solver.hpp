@@ -6,7 +6,7 @@
 
 class Solver {
   public:
-    void addObject(VerletObject obj) {
+    void addObject(VerletObject &obj) {
       objects.push_back(obj);
     }
 
