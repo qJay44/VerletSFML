@@ -19,6 +19,8 @@ class Render {
     std::vector<VerletObject> objects;
     sf::VertexArray vertices{sf::Quads};
 
+    bool showFPS = true;
+
   private:
     void addObject(int hue);
     void update(float dt);

@@ -30,13 +30,16 @@ void Render::run() {
           case sf::Keyboard::Q:
             window.close();
             break;
+          case sf::Keyboard::F:
+            showFPS = !showFPS;
+            break;
           default:
             break;
         }
     }
 
     if (sf::Mouse::isButtonPressed(sf::Mouse::Left))
-      addObject(hue);
+      addObject(hue++);
 
     deltaTime = clock.restart().asSeconds();
     update(deltaTime);
@@ -48,7 +51,7 @@ void Render::run() {
 }
 
 void Render::addObject(int hue) {
-  constexpr float r = 15.f;
+  constexpr float r = 5.f;
 
   sf::Vector2f mouse(sf::Mouse::getPosition(window));
   const VerletObject obj{mouse, mouse, {0.f, 0.f}, r, hsv2rgb(hue, 1.f, 1.f, 255.f)};
@@ -79,8 +82,6 @@ void Render::addObject(int hue) {
   vertices.append(topRight);
   vertices.append(bottomRight);
   vertices.append(bottomLeft);
-
-  hue++;
 }
 
 void Render::update(float dt) {
@@ -107,6 +108,8 @@ void Render::update(float dt) {
 
 void Render::draw() {
   window.draw(vertices, &circleTexture);
-  window.draw(fpsText);
+
+  if (showFPS)
+    window.draw(fpsText);
 }
 

@@ -17,6 +17,7 @@ class Solver {
   private:
     void applyGravity();
     void applyConstraint();
+    void solveCollisions();
     void updatePositions(float dt);
 };
 
