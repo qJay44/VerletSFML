@@ -1,10 +1,18 @@
 #include "Render.hpp"
+#include "Solver.hpp"
 
-Render::Render(uint16_t width, uint16_t height, std::string title) {
-  window.create(sf::VideoMode(width, height), title, sf::Style::Close);
+Render::Render() : solver(objects) {
+  window.create(sf::VideoMode(WIDTH, HEIGHT), "VerletSFML", sf::Style::Close);
   window.setFramerateLimit(90);
   font.loadFromFile("../../src/res/Minecraft rus.ttf");
   circleTexture.loadFromFile("../../src/res/circle-512.png");
+
+  fpsText.setString("90");
+  fpsText.setFont(font);
+  fpsText.setCharacterSize(20);
+  fpsText.setOutlineColor(sf::Color(31, 31, 31));
+  fpsText.setOutlineThickness(3.f);
+  fpsText.setPosition({WIDTH - fpsText.getLocalBounds().width, 0});
 }
 
 void Render::run() {
@@ -27,11 +35,8 @@ void Render::run() {
         }
     }
 
-    if (sf::Mouse::isButtonPressed(sf::Mouse::Left)) {
-      sf::Vector2f mouse(sf::Mouse::getPosition(window));
-      objects.push_back({mouse, mouse, {0.f, 0.f}, 15.f, hsv2rgb(hue, 1.f, 1.f, 255.f)});
-      hue++;
-    }
+    if (sf::Mouse::isButtonPressed(sf::Mouse::Left))
+      addObject(hue);
 
     deltaTime = clock.restart().asSeconds();
     update(deltaTime);
@@ -42,41 +47,66 @@ void Render::run() {
   }
 }
 
+void Render::addObject(int hue) {
+  constexpr float r = 15.f;
+
+  sf::Vector2f mouse(sf::Mouse::getPosition(window));
+  const VerletObject obj{mouse, mouse, {0.f, 0.f}, r, hsv2rgb(hue, 1.f, 1.f, 255.f)};
+  objects.push_back(obj);
+
+  const sf::Vector2f texSize(circleTexture.getSize());
+  sf::Vertex topLeft;
+  sf::Vertex topRight;
+  sf::Vertex bottomRight;
+  sf::Vertex bottomLeft;
+
+  topLeft.position     = {mouse.x - r, mouse.y - r};
+  topRight.position    = {mouse.x + r, mouse.y - r};
+  bottomRight.position = {mouse.x + r, mouse.y + r};
+  bottomLeft.position  = {mouse.x - r, mouse.y + r};
+
+  topLeft.color     = obj.color;
+  topRight.color    = obj.color;
+  bottomRight.color = obj.color;
+  bottomLeft.color  = obj.color;
+
+  topLeft.texCoords     = {0.f, 0.f};
+  topRight.texCoords    = {texSize.x, 0.f};
+  bottomRight.texCoords = {texSize.x, texSize.y};
+  bottomLeft.texCoords  = {0.f, texSize.y};
+
+  vertices.append(topLeft);
+  vertices.append(topRight);
+  vertices.append(bottomRight);
+  vertices.append(bottomLeft);
+
+  hue++;
+}
+
 void Render::update(float dt) {
-  // Create vertices of the objects
-  vertices.clear();
-  for (const VerletObject& obj : objects) {
-    static const sf::Vector2f texSize(circleTexture.getSize());
+  // Update fps text
+  int fps = static_cast<int>(1.f / dt);
+  fpsText.setString(std::to_string(fps));
+
+  // Update objects
+  solver.update(dt);
+
+  // Update vertices
+  for (int i = 0; i < objects.size(); i ++) {
+    const VerletObject& obj = objects[i];
     const sf::Vector2f& pos = obj.positionCurrent;
-    float halfSize = obj.size * 0.5f;
-    sf::Vertex topLeft;
-    sf::Vertex topRight;
-    sf::Vertex bottomRight;
-    sf::Vertex bottomLeft;
+    const float& r = obj.radius;
+    int ii = i << 2;
 
-    topLeft.position     = {pos.x - halfSize, pos.y - halfSize};
-    topRight.position    = {pos.x + halfSize, pos.y - halfSize};
-    bottomRight.position = {pos.x + halfSize, pos.y + halfSize};
-    bottomLeft.position  = {pos.x - halfSize, pos.y + halfSize};
-
-    topLeft.color     = obj.color;
-    topRight.color    = obj.color;
-    bottomRight.color = obj.color;
-    bottomLeft.color  = obj.color;
-
-    topLeft.texCoords     = {0.f, 0.f};
-    topRight.texCoords    = {texSize.x, 0.f};
-    bottomRight.texCoords = {texSize.x, texSize.y};
-    bottomLeft.texCoords  = {0.f, texSize.y};
-
-    vertices.append(topLeft);
-    vertices.append(topRight);
-    vertices.append(bottomRight);
-    vertices.append(bottomLeft);
+    vertices[ii + 0].position = {pos.x - r, pos.y - r};
+    vertices[ii + 1].position = {pos.x + r, pos.y - r};
+    vertices[ii + 2].position = {pos.x + r, pos.y + r};
+    vertices[ii + 3].position = {pos.x - r, pos.y + r};
   }
 }
 
 void Render::draw() {
   window.draw(vertices, &circleTexture);
+  window.draw(fpsText);
 }
 

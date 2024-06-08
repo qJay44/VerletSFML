@@ -1,7 +1,7 @@
 #include "engine/Render.hpp"
 
 int main() {
-  Render render(WIDTH, HEIGHT, "VertletSFML");
+  Render render;
   render.run();
 
 	return 0;

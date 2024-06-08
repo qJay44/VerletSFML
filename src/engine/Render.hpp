@@ -1,15 +1,11 @@
 #ifndef RENDER_H
 #define RENDER_H
 
-#include <cstdint>
-#include <list>
-#include <string>
-
-#include "VerletObject.hpp"
+#include "Solver.hpp"
 
 class Render {
   public:
-    Render(uint16_t width, uint16_t height, std::string title);
+    Render();
     void run();
 
   private:
@@ -17,11 +13,14 @@ class Render {
     sf::Font font;
     sf::Clock clock;
     sf::Texture circleTexture;
+    sf::Text fpsText;
 
-    std::list<VerletObject> objects;
+    Solver solver;
+    std::vector<VerletObject> objects;
     sf::VertexArray vertices{sf::Quads};
 
   private:
+    void addObject(int hue);
     void update(float dt);
     void draw();
 };
