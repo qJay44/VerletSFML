@@ -3,10 +3,13 @@
 Solver::Solver(std::vector<VerletObject>& objects) : objects(objects) {}
 
 void Solver::update(float dt) {
-  applyGravity();
-  applyConstraint();
-  solveCollisions();
-  updatePositions(dt);
+  float dtSub = dt / SUB_STEPS;
+  for (int i = 0; i < SUB_STEPS; i++) {
+    applyGravity();
+    applyConstraint();
+    updatePositions(dtSub);
+    solveCollisions();
+  }
 }
 
 void Solver::applyGravity() {
@@ -33,10 +36,11 @@ void Solver::solveCollisions() {
       float minDist = obj1.radius + obj2.radius;
 
       if (dist < minDist) {
-        sf::Vector2f n = collisionAxis / dist;
-        float delta = minDist - dist;
-        obj1.positionCurrent += 0.5f * delta * n;
-        obj2.positionCurrent -= 0.5f * delta * n;
+        constexpr float responseCoef = 0.75f;
+        sf::Vector2f n = collisionAxis / (dist + 0.1f);
+        float delta = 0.5f * (minDist - dist) * responseCoef;
+        obj1.positionCurrent += delta * n;
+        obj2.positionCurrent -= delta * n;
       }
     }
   }

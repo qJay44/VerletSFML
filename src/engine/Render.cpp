@@ -13,6 +13,18 @@ Render::Render() : solver(objects) {
   fpsText.setOutlineColor(sf::Color(31, 31, 31));
   fpsText.setOutlineThickness(3.f);
   fpsText.setPosition({WIDTH - fpsText.getLocalBounds().width, 0});
+
+  infoText.setString("count:\t100000\nsub steps:\t10");
+  infoText.setFont(font);
+  infoText.setCharacterSize(10);
+  infoText.setOutlineColor(sf::Color(31, 31, 31));
+  infoText.setOutlineThickness(3.f);
+
+  spawner = new Spawner(objects, vertices, sf::Vector2f(circleTexture.getSize()), 2400);
+}
+
+Render::~Render() {
+  if (spawner) delete spawner;
 }
 
 void Render::run() {
@@ -33,15 +45,20 @@ void Render::run() {
           case sf::Keyboard::F:
             showFPS = !showFPS;
             break;
+          case sf::Keyboard::I:
+            showInfo = !showInfo;
+            break;
           default:
             break;
         }
     }
 
-    if (sf::Mouse::isButtonPressed(sf::Mouse::Left))
-      addObject(hue++);
-
     deltaTime = clock.restart().asSeconds();
+
+    if (spawner && spawner->add(deltaTime)) {
+      delete spawner; spawner = nullptr;
+    }
+
     update(deltaTime);
 
     window.clear();
@@ -50,45 +67,7 @@ void Render::run() {
   }
 }
 
-void Render::addObject(int hue) {
-  constexpr float r = 5.f;
-
-  sf::Vector2f mouse(sf::Mouse::getPosition(window));
-  const VerletObject obj{mouse, mouse, {0.f, 0.f}, r, hsv2rgb(hue, 1.f, 1.f, 255.f)};
-  objects.push_back(obj);
-
-  const sf::Vector2f texSize(circleTexture.getSize());
-  sf::Vertex topLeft;
-  sf::Vertex topRight;
-  sf::Vertex bottomRight;
-  sf::Vertex bottomLeft;
-
-  topLeft.position     = {mouse.x - r, mouse.y - r};
-  topRight.position    = {mouse.x + r, mouse.y - r};
-  bottomRight.position = {mouse.x + r, mouse.y + r};
-  bottomLeft.position  = {mouse.x - r, mouse.y + r};
-
-  topLeft.color     = obj.color;
-  topRight.color    = obj.color;
-  bottomRight.color = obj.color;
-  bottomLeft.color  = obj.color;
-
-  topLeft.texCoords     = {0.f, 0.f};
-  topRight.texCoords    = {texSize.x, 0.f};
-  bottomRight.texCoords = {texSize.x, texSize.y};
-  bottomLeft.texCoords  = {0.f, texSize.y};
-
-  vertices.append(topLeft);
-  vertices.append(topRight);
-  vertices.append(bottomRight);
-  vertices.append(bottomLeft);
-}
-
 void Render::update(float dt) {
-  // Update fps text
-  int fps = static_cast<int>(1.f / dt);
-  fpsText.setString(std::to_string(fps));
-
   // Update objects
   solver.update(dt);
 
@@ -104,6 +83,15 @@ void Render::update(float dt) {
     vertices[ii + 2].position = {pos.x + r, pos.y + r};
     vertices[ii + 3].position = {pos.x - r, pos.y + r};
   }
+
+  // Update fps text
+  int fps = static_cast<int>(1.f / dt);
+  fpsText.setString(std::to_string(fps));
+
+  // Update info text
+  std::string infoStr("count:\t" + std::to_string(objects.size()));
+  infoStr.append("\nsub steps:\t" + std::to_string(SUB_STEPS));
+  infoText.setString(infoStr);
 }
 
 void Render::draw() {
@@ -111,5 +99,8 @@ void Render::draw() {
 
   if (showFPS)
     window.draw(fpsText);
+
+  if (showInfo)
+    window.draw(infoText);
 }
 

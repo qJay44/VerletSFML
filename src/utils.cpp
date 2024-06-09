@@ -1,5 +1,4 @@
 #include "utils.hpp"
-#include <cmath>
 
 sf::Color hsv2rgb(int hue, float sat, float val, const float d) {
   hue %= 360;
@@ -26,9 +25,5 @@ sf::Color hsv2rgb(int hue, float sat, float val, const float d) {
     case 4: return sf::Color(t * 255, p * 255, val * 255, d);
     case 5: return sf::Color(val * 255, p * 255, q * 255, d);
   }
-}
-
-float magnitude(const sf::Vector2f& v) {
-  return sqrtf(v.x * v.x + v.y * v.y);
 }
 
