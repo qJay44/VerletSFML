@@ -23,8 +23,12 @@ class Render {
     std::vector<VerletObject> objects;
     sf::VertexArray vertices{sf::Quads};
 
+    qt::Rectangle boundary{WIDTH * 0.5f, HEIGHT * 0.5f, WIDTH * 0.5f, HEIGHT * 0.5f};
+    qt::Node* quadtree = nullptr;
+
     bool showFPS = true;
     bool showInfo = false;
+    bool showQT = false;
 
   private:
     void update(float dt);

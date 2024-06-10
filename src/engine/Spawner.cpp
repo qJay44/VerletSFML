@@ -6,8 +6,8 @@ Spawner::Spawner(std::vector<VerletObject>& objects, sf::VertexArray& vertices, 
   : objects(objects), vertices(vertices), texSize(texSize), goal(count) {}
 
 bool Spawner::add(float dt) {
-  constexpr int minRadius = 3;
-  constexpr int maxRadius = 7;
+  constexpr int minRadius = 2;
+  constexpr int maxRadius = 2;
   static const sf::Vector2f accInit{maxRadius, maxRadius};
   float r = std::rand() % (maxRadius - minRadius + 1) + minRadius;
 
@@ -43,9 +43,6 @@ bool Spawner::add(float dt) {
   vertices.append(topRight);
   vertices.append(bottomRight);
   vertices.append(bottomLeft);
-
-  angle += SPAWNER_ANGLE_STEP * angleDir * dt;
-  if (angle <= 0.f || angle >= PI_2) angleDir *= -1.f;
 
   return ++current == goal;
 }
