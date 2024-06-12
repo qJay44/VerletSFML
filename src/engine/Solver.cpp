@@ -1,21 +1,47 @@
 #include "Solver.hpp"
 
+#define IX(x, y) ((x) + (y) * (COLUMNS))
+
 Solver::Solver(std::vector<VerletObject>& objects)
   : objects(objects) {
-    tp.start();
+    cells.resize(COLUMNS * ROWS);
+    cells.reserve(COLUMNS * ROWS);
+
+    for (int i = 0; i < COLUMNS; i++) {
+      for (int j = 0; j < ROWS; j++) {
+        Cell& cell = cells[IX(i, j)];
+
+        // Along left side
+        if (i > 0) {
+          cell.addNeighbour(&cells[IX(i - 1, j)]); // Middle-left
+
+          if (j > 0)        cell.addNeighbour(&cells[IX(i - 1, j - 1)]); // Top-left
+          if (j < ROWS - 1) cell.addNeighbour(&cells[IX(i - 1, j + 1)]); // Bottom-left
+        }
+
+        // Along right side
+        if (i < COLUMNS - 1) {
+          cell.addNeighbour(&cells[IX(i + 1, j)]); // Middle-right
+
+          if (j > 0)        cell.addNeighbour(&cells[IX(i + 1, j - 1)]); // Top-left
+          if (j < ROWS - 1) cell.addNeighbour(&cells[IX(i + 1, j + 1)]); // Bottom-left
+        }
+
+        // Above and under
+        if (j > 0)        cell.addNeighbour(&cells[IX(i, j - 1)]); // Top
+        if (j < ROWS - 1) cell.addNeighbour(&cells[IX(i, j + 1)]); // Bottom
+      }
+    }
   }
 
-Solver::~Solver() {
-  tp.stop();
-}
-
-void Solver::setQuadTree(qt::Node* qt) {
-  quadtree = qt;
-}
+Solver::~Solver() {}
 
 void Solver::update(float dt) {
   float dtSub = dt / SUB_STEPS;
   for (int i = 0; i < SUB_STEPS; i++) {
+    for (Cell& cell : cells)
+      cell.clearObjects();
+
     for (VerletObject& obj : objects) {
       // Apply gravity
       obj.accelerate(gravity);
@@ -28,52 +54,29 @@ void Solver::update(float dt) {
       if (obj.positionCurrent.x - obj.radius <= 0.f) obj.positionCurrent.x = obj.radius;
       else if (obj.positionCurrent.x + obj.radius >= WIDTH) obj.positionCurrent.x = WIDTH - obj.radius;
 
+      // Update cells
+      int column = obj.positionCurrent.x / CELL_SIZE;
+      int row = obj.positionCurrent.y / CELL_SIZE;
+      cells[IX(column, row)].addObject(&obj);
+
       // Update position
       obj.updatePosition(dtSub);
-      quadtree->insert({obj.positionCurrent.x, obj.positionCurrent.y, (void*)&obj});
     }
 
     solveCollisions();
   }
 }
-void Solver::solveCollisions() {
-  int tpSize = tp.size();
-  int slice = objects.size() / tpSize;
 
-  for (int i = 0; i < tpSize; i++) {
-    int begin = i * slice;
-    int end = begin + slice;
+ const Cell* Solver::getCellAt(int x, int y) const {
+  std::list<const Cell*> list;
+  int column = x / CELL_SIZE;
+  int row = y / CELL_SIZE;
 
-    if (i == tpSize - 1)
-      end += objects.size() % tpSize;
-
-    tp.queueJob([this, begin, end] {solveCollisionsThreaded(begin, end);});
-  }
-  tp.waitForCompletion();
+  return &cells[IX(column, row)];
 }
 
-void Solver::solveCollisionsThreaded(int begin, int end) {
-  for (int i = begin; i < end; i++) {
-    VerletObject& obj1 = objects[i];
-    std::list<void*> found;
-    quadtree->query(found, {obj1.positionCurrent.x, obj1.positionCurrent.y, obj1.radius * 2.f, obj1.radius * 2.f});
-
-    for (void* dataObj : found) {
-      VerletObject* obj2 = (VerletObject*) dataObj;
-      if (&obj1 != obj2) {
-        sf::Vector2f collisionAxis = obj1.positionCurrent - obj2->positionCurrent;
-        float dist = magnitude(collisionAxis);
-        float minDist = obj1.radius + obj2->radius;
-
-        if (dist < minDist) {
-          constexpr float responseCoef = 0.75f;
-          sf::Vector2f n = collisionAxis / (dist + 0.01f);
-          float delta = 0.5f * (minDist - dist) * responseCoef;
-          obj1.positionCurrent += delta * n;
-          obj2->positionCurrent -= delta * n;
-        }
-      }
-    }
-  }
+void Solver::solveCollisions() {
+  for (Cell& c1 : cells)
+    c1.checkCollisions();
 }
 

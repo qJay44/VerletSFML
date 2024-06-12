@@ -2,14 +2,14 @@
 
 #include "Spawner.hpp"
 
-Spawner::Spawner(std::vector<VerletObject>& objects, sf::VertexArray& vertices, sf::Vector2f texSize, int count)
-  : objects(objects), vertices(vertices), texSize(texSize), goal(count) {}
+Spawner::Spawner(std::vector<VerletObject>& objects, sf::VertexArray& vertices, sf::Vector2f texSize)
+  : objects(objects), vertices(vertices), texSize(texSize) {}
 
-bool Spawner::add(float dt) {
+void Spawner::add(int lines, float dt) {
   constexpr float r = 1.f;
   constexpr float angle = 0.f;
 
-  for (int i = 0; i < 4 && current++ < goal; i++) {
+  for (int i = 0; i < lines; i++) {
     sf::Vector2f pos{r, r + r * i * 2.f};
     sf::Vector2f radPos{cosf(angle), sinf(angle)};
     sf::Vector2f dir(radPos / magnitude(radPos));
@@ -43,7 +43,5 @@ bool Spawner::add(float dt) {
     vertices.append(bottomRight);
     vertices.append(bottomLeft);
   }
-
-  return current == goal;
 }
 

@@ -20,13 +20,11 @@ Render::Render() : solver(objects) {
   infoText.setOutlineColor(sf::Color(31, 31, 31));
   infoText.setOutlineThickness(3.f);
 
-  spawner = new Spawner(objects, vertices, sf::Vector2f(circleTexture.getSize()), SPAWN_COUNT);
-  quadtree = new qt::Node(boundary);
+  spawner = new Spawner(objects, vertices, sf::Vector2f(circleTexture.getSize()));
 }
 
 Render::~Render() {
   if (spawner) delete spawner;
-  delete quadtree;
 }
 
 void Render::run() {
@@ -40,29 +38,12 @@ void Render::run() {
         window.close();
 
       if (event.type == sf::Event::KeyReleased)
-        switch (event.key.code) {
-          case sf::Keyboard::Q:
-            window.close();
-            break;
-          case sf::Keyboard::F:
-            showFPS = !showFPS;
-            break;
-          case sf::Keyboard::I:
-            showInfo = !showInfo;
-            break;
-          case sf::Keyboard::G:
-            showQT = !showQT;
-            break;
-          default:
-            break;
-        }
+        handleKeyReleased(event.key.code);
     }
 
     deltaTime = clock.restart().asSeconds();
 
-    if (spawner && spawner->add(deltaTime)) {
-      delete spawner; spawner = nullptr;
-    }
+    spawner->add(spawnAtOnce, deltaTime);
 
     update(deltaTime);
 
@@ -73,10 +54,6 @@ void Render::run() {
 }
 
 void Render::update(float dt) {
-  // Reset quadtree
-  delete quadtree; quadtree = new qt::Node(boundary);
-  solver.setQuadTree(quadtree);
-
   // Update objects
   solver.update(dt);
 
@@ -112,10 +89,90 @@ void Render::draw() {
   if (showInfo)
     window.draw(infoText);
 
-  if (showQT) {
-    sf::VertexArray va{sf::Lines};
-    quadtree->show(va);
-    window.draw(va);
+  if (showCells) {
+    sf::Vector2 mouse{sf::Mouse::getPosition(window)};
+    const Cell* cell = solver.getCellAt(mouse.x, mouse.y);
+    int rectX = static_cast<int>(mouse.x / CELL_SIZE) * CELL_SIZE;
+    int rectY = static_cast<int>(mouse.y / CELL_SIZE) * CELL_SIZE;
+    sf::RectangleShape rect({CELL_SIZE, CELL_SIZE});
+
+    // Center
+    rect.setPosition(sf::Vector2f(rectX, rectY));
+    rect.setFillColor(sf::Color::Transparent);
+    rect.setOutlineColor(sf::Color::Magenta);
+    rect.setOutlineThickness(1.f);
+    window.draw(rect);
+
+    // Along left side
+    rect.setPosition(sf::Vector2f(rectX - CELL_SIZE, rectY - CELL_SIZE));
+    window.draw(rect);
+    rect.setPosition(sf::Vector2f(rectX - CELL_SIZE, rectY));
+    window.draw(rect);
+    rect.setPosition(sf::Vector2f(rectX - CELL_SIZE, rectY + CELL_SIZE));
+    window.draw(rect);
+
+    // Along right side
+    rect.setPosition(sf::Vector2f(rectX + CELL_SIZE, rectY - CELL_SIZE));
+    window.draw(rect);
+    rect.setPosition(sf::Vector2f(rectX + CELL_SIZE, rectY));
+    window.draw(rect);
+    rect.setPosition(sf::Vector2f(rectX + CELL_SIZE, rectY + CELL_SIZE));
+    window.draw(rect);
+
+    // Above and under
+    rect.setPosition(sf::Vector2f(rectX, rectY - CELL_SIZE));
+    window.draw(rect);
+    rect.setPosition(sf::Vector2f(rectX, rectY + CELL_SIZE));
+    window.draw(rect);
+  }
+}
+
+void Render::handleKeyReleased(int key) {
+  switch (key) {
+    case sf::Keyboard::Q:
+      window.close();
+      break;
+    case sf::Keyboard::F:
+      showFPS = !showFPS;
+      break;
+    case sf::Keyboard::I:
+      showInfo = !showInfo;
+      break;
+    case sf::Keyboard::G:
+      showCells = !showCells;
+      break;
+    case sf::Keyboard::Num0:
+      spawnAtOnce = 0;
+      break;
+    case sf::Keyboard::Num1:
+      spawnAtOnce = 1;
+      break;
+    case sf::Keyboard::Num2:
+      spawnAtOnce = 2;
+      break;
+    case sf::Keyboard::Num3:
+      spawnAtOnce = 3;
+      break;
+    case sf::Keyboard::Num4:
+      spawnAtOnce = 4;
+      break;
+    case sf::Keyboard::Num5:
+      spawnAtOnce = 5;
+      break;
+    case sf::Keyboard::Num6:
+      spawnAtOnce = 6;
+      break;
+    case sf::Keyboard::Num7:
+      spawnAtOnce = 7;
+      break;
+    case sf::Keyboard::Num8:
+      spawnAtOnce = 8;
+      break;
+    case sf::Keyboard::Num9:
+      spawnAtOnce = 9;
+      break;
+    default:
+      break;
   }
 }
 

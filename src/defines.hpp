@@ -3,5 +3,7 @@
 #define WIDTH 1200
 #define HEIGHT 720
 #define SUB_STEPS 8
-#define SPAWN_COUNT 2400
+#define CELL_SIZE 10
+#define COLUMNS (WIDTH / CELL_SIZE)
+#define ROWS (HEIGHT / CELL_SIZE)
 

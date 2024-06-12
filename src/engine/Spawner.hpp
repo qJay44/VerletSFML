@@ -5,15 +5,14 @@
 
 class Spawner {
   public:
-    Spawner(std::vector<VerletObject>& objects, sf::VertexArray& vertices, sf::Vector2f texSize, int count);
-    bool add(float dt); // Returns true if added last element
+    Spawner(std::vector<VerletObject>& objects, sf::VertexArray& vertices, sf::Vector2f texSize);
+    void add(int lines, float dt);
 
   private:
     std::vector<VerletObject>& objects;
     sf::VertexArray& vertices;
 
     const sf::Vector2f texSize;
-    const int goal = 0;
 
     int current = 0;
     int hue = 0;

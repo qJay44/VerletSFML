@@ -3,27 +3,24 @@
 
 #include <vector>
 
-#include "ThreadPool.h"
-#include "VerletObject.hpp"
-#include "quadtree.hpp"
+#include "Cell.hpp"
 
 class Solver {
   public:
     Solver(std::vector<VerletObject>& objects);
     ~Solver();
 
-    void setQuadTree(qt::Node* qt);
     void update(float dt);
+
+    const Cell* getCellAt(int x, int y) const;
 
   private:
     std::vector<VerletObject>& objects;
+    std::vector<Cell> cells;
     sf::Vector2f gravity{0.f, 1000.f};
-    qt::Node* quadtree = nullptr;
-    ThreadPool tp;
 
   private:
     void solveCollisions();
-    void solveCollisionsThreaded(int begin, int end);
 };
 
 #endif

@@ -22,15 +22,14 @@ class Render {
     Spawner* spawner = nullptr;
     std::vector<VerletObject> objects;
     sf::VertexArray vertices{sf::Quads};
-
-    qt::Rectangle boundary{WIDTH * 0.5f, HEIGHT * 0.5f, WIDTH * 0.5f, HEIGHT * 0.5f};
-    qt::Node* quadtree = nullptr;
+    int spawnAtOnce = 1;
 
     bool showFPS = true;
     bool showInfo = false;
-    bool showQT = false;
+    bool showCells = false;
 
   private:
+    void handleKeyReleased(int);
     void update(float dt);
     void draw();
 };
