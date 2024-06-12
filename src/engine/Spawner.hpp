@@ -17,8 +17,6 @@ class Spawner {
 
     int current = 0;
     int hue = 0;
-    float angle = 0.f;
-    float angleDir = 1.f; // Defines wherenever to increase (1) or decrease (-1) radians
 };
 
 #endif

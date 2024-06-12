@@ -20,7 +20,7 @@ Render::Render() : solver(objects) {
   infoText.setOutlineColor(sf::Color(31, 31, 31));
   infoText.setOutlineThickness(3.f);
 
-  spawner = new Spawner(objects, vertices, sf::Vector2f(circleTexture.getSize()), 2400);
+  spawner = new Spawner(objects, vertices, sf::Vector2f(circleTexture.getSize()), SPAWN_COUNT);
   quadtree = new qt::Node(boundary);
 }
 
@@ -77,10 +77,8 @@ void Render::update(float dt) {
   delete quadtree; quadtree = new qt::Node(boundary);
   solver.setQuadTree(quadtree);
 
-  sf::Clock c;
   // Update objects
   solver.update(dt);
-  float t = c.restart().asSeconds();
 
   // Update vertices
   for (int i = 0; i < objects.size(); i ++) {
@@ -102,7 +100,6 @@ void Render::update(float dt) {
   // Update info text
   std::string infoStr("count:\t" + std::to_string(objects.size()));
   infoStr.append("\nsub steps:\t" + std::to_string(SUB_STEPS));
-  infoStr.append("\nv time:\t" + std::to_string(t));
   infoText.setString(infoStr);
 }
 
