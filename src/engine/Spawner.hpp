@@ -15,7 +15,7 @@ class Spawner {
     const sf::Vector2f texSize;
 
     int current = 0;
-    int hue = 0;
+    float hue = 0.f;
 };
 
 #endif

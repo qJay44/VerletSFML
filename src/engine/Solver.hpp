@@ -4,6 +4,7 @@
 #include <vector>
 
 #include "Cell.hpp"
+#include "ThreadPool.hpp"
 
 class Solver {
   public:
@@ -17,7 +18,8 @@ class Solver {
   private:
     std::vector<VerletObject>& objects;
     std::vector<Cell> cells;
-    sf::Vector2f gravity{0.f, 1000.f};
+    sf::Vector2f gravity{0.f, 80.f};
+    ThreadPool tp;
 
   private:
     void solveCollisions();

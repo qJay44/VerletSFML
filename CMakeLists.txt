@@ -6,7 +6,7 @@ cmake_minimum_required(VERSION 3.10)
 set(CMAKE_C_COMPILER ${MINGW64_PATH}/gcc.exe)
 set(CMAKE_CXX_COMPILER ${MINGW64_PATH}/g++.exe)
 
-set(CMAKE_CXX_STANDARD 17)
+set(CMAKE_CXX_STANDARD 20)
 set(CMAKE_CXX_STANDARD_REQUIRED ON)
 
 project(MyProject VERSION 1.0)

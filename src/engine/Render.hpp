@@ -24,9 +24,8 @@ class Render {
     sf::VertexArray vertices{sf::Quads};
     int spawnAtOnce = 1;
 
-    bool showFPS = true;
-    bool showInfo = false;
-    bool showCells = false;
+    bool showFPS = false;
+    bool showInfo = true;
 
   private:
     void handleKeyReleased(int);

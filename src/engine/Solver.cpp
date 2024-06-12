@@ -32,9 +32,12 @@ Solver::Solver(std::vector<VerletObject>& objects)
         if (j < ROWS - 1) cell.addNeighbour(&cells[IX(i, j + 1)]); // Bottom
       }
     }
+    tp.start();
   }
 
-Solver::~Solver() {}
+Solver::~Solver() {
+  tp.stop();
+}
 
 void Solver::update(float dt) {
   float dtSub = dt / SUB_STEPS;
@@ -42,26 +45,39 @@ void Solver::update(float dt) {
     for (Cell& cell : cells)
       cell.clearObjects();
 
-    for (VerletObject& obj : objects) {
-      // Apply gravity
-      obj.accelerate(gravity);
+    int slice = objects.size() / tp.size();
+    for (int i = 0; i < tp.size(); i++) {
+      int begin = i * slice;
+      int end = begin + slice;
 
-      // Apply vertical constraint
-      if (obj.positionCurrent.y - obj.radius <= 0.f) obj.positionCurrent.y = obj.radius;
-      else if (obj.positionCurrent.y + obj.radius >= HEIGHT) obj.positionCurrent.y = HEIGHT - obj.radius;
+      if (i == tp.size() - 1)
+        end += objects.size() % tp.size();
 
-      // Apply horizontal constraint
-      if (obj.positionCurrent.x - obj.radius <= 0.f) obj.positionCurrent.x = obj.radius;
-      else if (obj.positionCurrent.x + obj.radius >= WIDTH) obj.positionCurrent.x = WIDTH - obj.radius;
+      tp.queueJob([this, begin, end, dtSub] {
+        for (int i = begin; i < end; i++) {
+          VerletObject& obj = objects[i];
+          // Apply gravity
+          obj.accelerate(gravity);
 
-      // Update cells
-      int column = obj.positionCurrent.x / CELL_SIZE;
-      int row = obj.positionCurrent.y / CELL_SIZE;
-      cells[IX(column, row)].addObject(&obj);
+          // Apply vertical constraint
+          if (obj.positionCurrent.y - obj.radius <= 0.f) obj.positionCurrent.y = obj.radius;
+          else if (obj.positionCurrent.y + obj.radius >= HEIGHT) obj.positionCurrent.y = HEIGHT - obj.radius;
 
-      // Update position
-      obj.updatePosition(dtSub);
+          // Apply horizontal constraint
+          if (obj.positionCurrent.x - obj.radius <= 0.f) obj.positionCurrent.x = obj.radius;
+          else if (obj.positionCurrent.x + obj.radius >= WIDTH) obj.positionCurrent.x = WIDTH - obj.radius;
+
+          // Update cells
+          int column = obj.positionCurrent.x / CELL_SIZE;
+          int row = obj.positionCurrent.y / CELL_SIZE;
+          cells[IX(column, row)].addObject(&obj);
+
+          // Update position
+          obj.updatePosition(dtSub);
+        }
+      });
     }
+    tp.waitForCompletion();
 
     solveCollisions();
   }
@@ -76,7 +92,36 @@ void Solver::update(float dt) {
 }
 
 void Solver::solveCollisions() {
-  for (Cell& c1 : cells)
-    c1.checkCollisions();
+  int sliceCount = tp.size() * 2;
+  int slice = COLUMNS / sliceCount;
+
+  // First half
+  for (int i = 0; i < tp.size(); i++) {
+    int begin = i * slice;
+    int end = begin + slice;
+
+    tp.queueJob([this, begin, end] {
+      for (int i = begin; i < end; i++)
+        for (int j = 0; j < ROWS; j++)
+          cells[IX(i, j)].checkCollisions();
+    });
+  }
+  tp.waitForCompletion();
+
+  // Second half
+  for (int i = tp.size(); i < sliceCount; i++) {
+    int begin = i * slice;
+    int end = begin + slice;
+
+    if (i == sliceCount - 1)
+      end += COLUMNS % sliceCount;
+
+    tp.queueJob([this, begin, end] {
+      for (int i = begin; i < end; i++)
+        for (int j = 0; j < ROWS; j++)
+          cells[IX(i, j)].checkCollisions();
+    });
+  }
+  tp.waitForCompletion();
 }
 

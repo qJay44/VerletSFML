@@ -1,5 +1,7 @@
 #include "Render.hpp"
 #include "Solver.hpp"
+#include <algorithm>
+#include <format>
 
 Render::Render() : solver(objects) {
   window.create(sf::VideoMode(WIDTH, HEIGHT), "VerletSFML", sf::Style::Close);
@@ -75,8 +77,9 @@ void Render::update(float dt) {
   fpsText.setString(std::to_string(fps));
 
   // Update info text
-  std::string infoStr("count:\t" + std::to_string(objects.size()));
-  infoStr.append("\nsub steps:\t" + std::to_string(SUB_STEPS));
+  std::string infoStr(std::format("count:\t{}\n", objects.size()));
+  infoStr.append(std::format("sub steps:\t{}\n", SUB_STEPS));
+  infoStr.append(std::format("{:.2f}ms", dt * 1000.f));
   infoText.setString(infoStr);
 }
 
@@ -88,43 +91,6 @@ void Render::draw() {
 
   if (showInfo)
     window.draw(infoText);
-
-  if (showCells) {
-    sf::Vector2 mouse{sf::Mouse::getPosition(window)};
-    const Cell* cell = solver.getCellAt(mouse.x, mouse.y);
-    int rectX = static_cast<int>(mouse.x / CELL_SIZE) * CELL_SIZE;
-    int rectY = static_cast<int>(mouse.y / CELL_SIZE) * CELL_SIZE;
-    sf::RectangleShape rect({CELL_SIZE, CELL_SIZE});
-
-    // Center
-    rect.setPosition(sf::Vector2f(rectX, rectY));
-    rect.setFillColor(sf::Color::Transparent);
-    rect.setOutlineColor(sf::Color::Magenta);
-    rect.setOutlineThickness(1.f);
-    window.draw(rect);
-
-    // Along left side
-    rect.setPosition(sf::Vector2f(rectX - CELL_SIZE, rectY - CELL_SIZE));
-    window.draw(rect);
-    rect.setPosition(sf::Vector2f(rectX - CELL_SIZE, rectY));
-    window.draw(rect);
-    rect.setPosition(sf::Vector2f(rectX - CELL_SIZE, rectY + CELL_SIZE));
-    window.draw(rect);
-
-    // Along right side
-    rect.setPosition(sf::Vector2f(rectX + CELL_SIZE, rectY - CELL_SIZE));
-    window.draw(rect);
-    rect.setPosition(sf::Vector2f(rectX + CELL_SIZE, rectY));
-    window.draw(rect);
-    rect.setPosition(sf::Vector2f(rectX + CELL_SIZE, rectY + CELL_SIZE));
-    window.draw(rect);
-
-    // Above and under
-    rect.setPosition(sf::Vector2f(rectX, rectY - CELL_SIZE));
-    window.draw(rect);
-    rect.setPosition(sf::Vector2f(rectX, rectY + CELL_SIZE));
-    window.draw(rect);
-  }
 }
 
 void Render::handleKeyReleased(int key) {
@@ -138,38 +104,14 @@ void Render::handleKeyReleased(int key) {
     case sf::Keyboard::I:
       showInfo = !showInfo;
       break;
-    case sf::Keyboard::G:
-      showCells = !showCells;
-      break;
     case sf::Keyboard::Num0:
       spawnAtOnce = 0;
       break;
-    case sf::Keyboard::Num1:
-      spawnAtOnce = 1;
+    case sf::Keyboard::J:
+      spawnAtOnce = std::max(0, spawnAtOnce - 1);
       break;
-    case sf::Keyboard::Num2:
-      spawnAtOnce = 2;
-      break;
-    case sf::Keyboard::Num3:
-      spawnAtOnce = 3;
-      break;
-    case sf::Keyboard::Num4:
-      spawnAtOnce = 4;
-      break;
-    case sf::Keyboard::Num5:
-      spawnAtOnce = 5;
-      break;
-    case sf::Keyboard::Num6:
-      spawnAtOnce = 6;
-      break;
-    case sf::Keyboard::Num7:
-      spawnAtOnce = 7;
-      break;
-    case sf::Keyboard::Num8:
-      spawnAtOnce = 8;
-      break;
-    case sf::Keyboard::Num9:
-      spawnAtOnce = 9;
+    case sf::Keyboard::K:
+      spawnAtOnce++;
       break;
     default:
       break;

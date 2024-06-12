@@ -12,7 +12,7 @@ struct VerletObject {
   void updatePosition(float dt) {
     sf::Vector2f velocity = positionCurrent - positionOld;
     positionOld = positionCurrent;
-    positionCurrent += velocity + acceleration * dt * dt;
+    positionCurrent += velocity + (acceleration - velocity * 40.f) * dt * dt;
     acceleration = {};
   }
 

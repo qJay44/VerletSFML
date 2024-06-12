@@ -15,7 +15,7 @@ void Spawner::add(int lines, float dt) {
     sf::Vector2f dir(radPos / magnitude(radPos));
     sf::Vector2f acc{dir.x * pos.x, dir.y * pos.y};
 
-    VerletObject obj{pos + acc, pos, {0.f, 0.f}, r, hsv2rgb(hue++, 1.f, 1.f, 255.f)};
+    VerletObject obj{pos + acc, pos, {0.f, 0.f}, r, hsv2rgb(hue, 1.f, 1.f, 255.f)};
     objects.push_back(obj);
 
     sf::Vertex topLeft;
@@ -42,6 +42,8 @@ void Spawner::add(int lines, float dt) {
     vertices.append(topRight);
     vertices.append(bottomRight);
     vertices.append(bottomLeft);
+
+    hue += 0.01f;
   }
 }
 
