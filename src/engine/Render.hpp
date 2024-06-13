@@ -19,7 +19,7 @@ class Render {
     sf::Text infoText;
 
     Solver solver;
-    Spawner* spawner = nullptr;
+    Spawner spawner;
     std::vector<VerletObject> objects;
     sf::VertexArray vertices{sf::Quads};
     int spawnAtOnce = 1;
@@ -28,9 +28,10 @@ class Render {
     bool showInfo = true;
 
   private:
-    void handleKeyReleased(int);
     void update(float dt);
     void draw();
+    void reset();
+    void handleKeyReleased(int);
 };
 
 #endif

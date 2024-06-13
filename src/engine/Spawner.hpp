@@ -5,16 +5,16 @@
 
 class Spawner {
   public:
-    Spawner(std::vector<VerletObject>& objects, sf::VertexArray& vertices, sf::Vector2f texSize);
-    void add(int lines, float dt);
+    Spawner();
+    Spawner(std::vector<VerletObject>* objects, sf::VertexArray* vertices, sf::Vector2f texSize);
+
+    void add(int amount);
+    void reset();
 
   private:
-    std::vector<VerletObject>& objects;
-    sf::VertexArray& vertices;
-
-    const sf::Vector2f texSize;
-
-    int current = 0;
+    std::vector<VerletObject>* objects;
+    sf::VertexArray* vertices;
+    sf::Vector2f texSize;
     float hue = 0.f;
 };
 

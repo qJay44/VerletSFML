@@ -12,14 +12,16 @@ class Solver {
     ~Solver();
 
     void update(float dt);
-
-    const Cell* getCellAt(int x, int y) const;
+    void switchGravity();
+    void reset();
 
   private:
     std::vector<VerletObject>& objects;
     std::vector<Cell> cells;
     sf::Vector2f gravity{0.f, 80.f};
+    sf::Vector2f attractor{WIDTH * 0.5f, HEIGHT * 0.5f};
     ThreadPool tp;
+    bool useAttraction = false;
 
   private:
     void solveCollisions();

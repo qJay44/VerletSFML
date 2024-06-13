@@ -2,10 +2,15 @@
 
 #include "Spawner.hpp"
 
-Spawner::Spawner(std::vector<VerletObject>& objects, sf::VertexArray& vertices, sf::Vector2f texSize)
-  : objects(objects), vertices(vertices), texSize(texSize) {}
+Spawner::Spawner() {}
 
-void Spawner::add(int lines, float dt) {
+Spawner::Spawner(std::vector<VerletObject>* objects, sf::VertexArray* vertices, sf::Vector2f texSize) {
+  this->objects = objects;
+  this->vertices = vertices;
+  this->texSize = texSize;
+}
+
+void Spawner::add(int lines) {
   constexpr float r = 1.f;
   constexpr float angle = 0.f;
 
@@ -16,7 +21,7 @@ void Spawner::add(int lines, float dt) {
     sf::Vector2f acc{dir.x * pos.x * SUB_STEPS * 0.5f, dir.y * pos.y * SUB_STEPS * 0.5f};
 
     VerletObject obj{pos + acc, pos, {0.f, 0.f}, r, hsv2rgb(hue, 1.f, 1.f, 255.f)};
-    objects.push_back(obj);
+    objects->push_back(obj);
 
     sf::Vertex topLeft;
     sf::Vertex topRight;
@@ -38,12 +43,18 @@ void Spawner::add(int lines, float dt) {
     bottomRight.texCoords = {texSize.x, texSize.y};
     bottomLeft.texCoords  = {0.f, texSize.y};
 
-    vertices.append(topLeft);
-    vertices.append(topRight);
-    vertices.append(bottomRight);
-    vertices.append(bottomLeft);
+    vertices->append(topLeft);
+    vertices->append(topRight);
+    vertices->append(bottomRight);
+    vertices->append(bottomLeft);
 
     hue += 0.01f;
   }
+}
+
+void Spawner::reset() {
+  objects->clear();
+  vertices->clear();
+  hue = 0.f;
 }
 

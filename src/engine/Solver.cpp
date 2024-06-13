@@ -70,7 +70,7 @@ void Solver::update(float dt) {
         for (int i = begin; i < end; i++) {
           VerletObject& obj = objects[i];
           // Apply gravity
-          obj.accelerate(gravity);
+          useAttraction ? obj.attract(attractor) : obj.accelerate(gravity);
 
           // Update position
           obj.updatePosition(dtSub);
@@ -89,12 +89,14 @@ void Solver::update(float dt) {
   }
 }
 
- const Cell* Solver::getCellAt(int x, int y) const {
-  std::list<const Cell*> list;
-  int column = x / CELL_SIZE;
-  int row = y / CELL_SIZE;
+void Solver::switchGravity() {
+  useAttraction = !useAttraction;
+}
 
-  return &cells[IX(column, row)];
+void Solver::reset() {
+  objects.clear();
+  for (Cell& c : cells)
+    c.clearObjects();
 }
 
 void Solver::solveCollisions() {

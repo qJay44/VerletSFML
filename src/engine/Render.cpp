@@ -4,7 +4,8 @@
 #include "Render.hpp"
 #include "Solver.hpp"
 
-Render::Render() : solver(objects) {
+Render::Render()
+  : solver(objects) {
   window.create(sf::VideoMode(WIDTH, HEIGHT), "VerletSFML", sf::Style::Close);
   window.setFramerateLimit(90);
   font.loadFromFile("../../src/res/Minecraft rus.ttf");
@@ -23,12 +24,10 @@ Render::Render() : solver(objects) {
   infoText.setOutlineColor(sf::Color(31, 31, 31));
   infoText.setOutlineThickness(3.f);
 
-  spawner = new Spawner(objects, vertices, sf::Vector2f(circleTexture.getSize()));
+  spawner = Spawner(&objects, &vertices, sf::Vector2f(circleTexture.getSize()));
 }
 
-Render::~Render() {
-  if (spawner) delete spawner;
-}
+Render::~Render() {}
 
 void Render::run() {
   while (window.isOpen()) {
@@ -46,7 +45,7 @@ void Render::run() {
 
     deltaTime = clock.restart().asSeconds();
 
-    spawner->add(spawnAtOnce, deltaTime);
+    spawner.add(spawnAtOnce);
 
     update(deltaTime);
 
@@ -94,6 +93,11 @@ void Render::draw() {
     window.draw(infoText);
 }
 
+void Render::reset() {
+  solver.reset();
+  spawner.reset();
+}
+
 void Render::handleKeyReleased(int key) {
   switch (key) {
     case sf::Keyboard::Q:
@@ -114,6 +118,12 @@ void Render::handleKeyReleased(int key) {
       break;
     case sf::Keyboard::K:
       spawnAtOnce += 10;
+      break;
+    case sf::Keyboard::C:
+      solver.switchGravity();
+      break;
+    case sf::Keyboard::R:
+      reset();
       break;
     default:
       break;

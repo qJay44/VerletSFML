@@ -19,6 +19,11 @@ struct VerletObject {
   void accelerate(sf::Vector2f acc) {
     acceleration += acc;
   }
+
+  void attract(sf::Vector2f att) {
+    sf::Vector2f v = att - positionCurrent;
+    acceleration += v * 0.5f;
+  }
 };
 
 #endif
