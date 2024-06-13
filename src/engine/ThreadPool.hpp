@@ -27,9 +27,9 @@ class ThreadPool {
     void start();
     void start(uint32_t restriction);
     void queueJob(const std::function<void()>& job);
-    void waitForCompletion() const;
+    void waitForCompletion();
     void stop();
 
-    const int size() const;
+    const uint8_t size() const;
 };
 

@@ -41,10 +41,23 @@ Solver::~Solver() {
 
 void Solver::update(float dt) {
   float dtSub = dt / SUB_STEPS;
+
   for (int i = 0; i < SUB_STEPS; i++) {
+    // Clear cells from objects
     for (Cell& cell : cells)
       cell.clearObjects();
 
+    // Add objects to cells
+    for (VerletObject& obj : objects) {
+      int column = obj.positionCurrent.x / CELL_SIZE;
+      int row = obj.positionCurrent.y / CELL_SIZE;
+      cells[IX(column, row)].addObject(&obj);
+    }
+
+    // Apply collisions
+    solveCollisions();
+
+    // Threaded update gravity, constraints and position
     int slice = objects.size() / tp.size();
     for (int i = 0; i < tp.size(); i++) {
       int begin = i * slice;
@@ -59,6 +72,9 @@ void Solver::update(float dt) {
           // Apply gravity
           obj.accelerate(gravity);
 
+          // Update position
+          obj.updatePosition(dtSub);
+
           // Apply vertical constraint
           if (obj.positionCurrent.y - obj.radius <= 0.f) obj.positionCurrent.y = obj.radius;
           else if (obj.positionCurrent.y + obj.radius >= HEIGHT) obj.positionCurrent.y = HEIGHT - obj.radius;
@@ -66,20 +82,10 @@ void Solver::update(float dt) {
           // Apply horizontal constraint
           if (obj.positionCurrent.x - obj.radius <= 0.f) obj.positionCurrent.x = obj.radius;
           else if (obj.positionCurrent.x + obj.radius >= WIDTH) obj.positionCurrent.x = WIDTH - obj.radius;
-
-          // Update cells
-          int column = obj.positionCurrent.x / CELL_SIZE;
-          int row = obj.positionCurrent.y / CELL_SIZE;
-          cells[IX(column, row)].addObject(&obj);
-
-          // Update position
-          obj.updatePosition(dtSub);
         }
       });
     }
     tp.waitForCompletion();
-
-    solveCollisions();
   }
 }
 
@@ -92,34 +98,15 @@ void Solver::update(float dt) {
 }
 
 void Solver::solveCollisions() {
-  int sliceCount = tp.size() * 2;
-  int slice = COLUMNS / sliceCount;
+  int slice = cells.size() / tp.size();
 
-  // First half
   for (int i = 0; i < tp.size(); i++) {
     int begin = i * slice;
     int end = begin + slice;
 
     tp.queueJob([this, begin, end] {
       for (int i = begin; i < end; i++)
-        for (int j = 0; j < ROWS; j++)
-          cells[IX(i, j)].checkCollisions();
-    });
-  }
-  tp.waitForCompletion();
-
-  // Second half
-  for (int i = tp.size(); i < sliceCount; i++) {
-    int begin = i * slice;
-    int end = begin + slice;
-
-    if (i == sliceCount - 1)
-      end += COLUMNS % sliceCount;
-
-    tp.queueJob([this, begin, end] {
-      for (int i = begin; i < end; i++)
-        for (int j = 0; j < ROWS; j++)
-          cells[IX(i, j)].checkCollisions();
+        cells[i].checkCollisions();
     });
   }
   tp.waitForCompletion();

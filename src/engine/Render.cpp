@@ -1,7 +1,8 @@
-#include "Render.hpp"
-#include "Solver.hpp"
 #include <algorithm>
 #include <format>
+
+#include "Render.hpp"
+#include "Solver.hpp"
 
 Render::Render() : solver(objects) {
   window.create(sf::VideoMode(WIDTH, HEIGHT), "VerletSFML", sf::Style::Close);
@@ -108,10 +109,11 @@ void Render::handleKeyReleased(int key) {
       spawnAtOnce = 0;
       break;
     case sf::Keyboard::J:
-      spawnAtOnce = std::max(0, spawnAtOnce - 1);
+      spawnAtOnce -= 10;
+      spawnAtOnce = std::max(0, spawnAtOnce);
       break;
     case sf::Keyboard::K:
-      spawnAtOnce++;
+      spawnAtOnce += 10;
       break;
     default:
       break;

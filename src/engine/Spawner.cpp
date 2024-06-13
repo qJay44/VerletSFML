@@ -13,7 +13,7 @@ void Spawner::add(int lines, float dt) {
     sf::Vector2f pos{r, r + r * i * 2.f};
     sf::Vector2f radPos{cosf(angle), sinf(angle)};
     sf::Vector2f dir(radPos / magnitude(radPos));
-    sf::Vector2f acc{dir.x * pos.x, dir.y * pos.y};
+    sf::Vector2f acc{dir.x * pos.x * SUB_STEPS * 0.5f, dir.y * pos.y * SUB_STEPS * 0.5f};
 
     VerletObject obj{pos + acc, pos, {0.f, 0.f}, r, hsv2rgb(hue, 1.f, 1.f, 255.f)};
     objects.push_back(obj);
