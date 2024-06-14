@@ -10,10 +10,10 @@ void solveCollision(VerletObject* obj1, VerletObject* obj2) {
 
   if (distSq < minDistSq) {
     constexpr float responseCoef = 0.55f;
-
     float dist = sqrtf(distSq);
     sf::Vector2f n = collisionAxis / (dist + 0.001f);
     float delta = 0.5f * (minDist - dist) * responseCoef;
+
     obj1->positionCurrent += delta * n;
     obj2->positionCurrent -= delta * n;
   }

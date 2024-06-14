@@ -15,7 +15,8 @@ class Spawner {
     std::vector<VerletObject>* objects;
     sf::VertexArray* vertices;
     sf::Vector2f texSize;
-    float hue = 0.f;
+    float colorStep = 0.f;
+    int colorDir = 1;
 };
 
 #endif

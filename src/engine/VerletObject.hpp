@@ -10,6 +10,7 @@ struct VerletObject {
   sf::Color color;
 
   void updatePosition(float dt) {
+
     sf::Vector2f velocity = positionCurrent - positionOld;
     positionOld = positionCurrent;
     positionCurrent += velocity + (acceleration - velocity * 40.f) * dt * dt;
@@ -22,7 +23,7 @@ struct VerletObject {
 
   void attract(sf::Vector2f att) {
     sf::Vector2f v = att - positionCurrent;
-    acceleration += v * 0.5f;
+    acceleration += v * 0.25f;
   }
 };
 

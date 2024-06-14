@@ -1,6 +1,7 @@
 #include <cmath>
 
 #include "Spawner.hpp"
+#include "colormap.hpp"
 
 Spawner::Spawner() {}
 
@@ -20,7 +21,7 @@ void Spawner::add(int lines) {
     sf::Vector2f dir(radPos / magnitude(radPos));
     sf::Vector2f acc{dir.x * pos.x * SUB_STEPS * 0.5f, dir.y * pos.y * SUB_STEPS * 0.5f};
 
-    VerletObject obj{pos + acc, pos, {0.f, 0.f}, r, hsv2rgb(hue, 1.f, 1.f, 255.f)};
+    VerletObject obj{pos + acc, pos, {0.f, 0.f}, r, sf::Color(plasma[(int)colorStep])};
     objects->push_back(obj);
 
     sf::Vertex topLeft;
@@ -48,13 +49,15 @@ void Spawner::add(int lines) {
     vertices->append(bottomRight);
     vertices->append(bottomLeft);
 
-    hue += 0.01f;
+
+    colorDir = colorStep >= 256.f ? -1 : colorStep <= 0.f ? 1 : colorDir;
+    colorStep += 0.025f * colorDir;
   }
 }
 
 void Spawner::reset() {
   objects->clear();
   vertices->clear();
-  hue = 0.f;
+  colorStep = 0.f;
 }
 

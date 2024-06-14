@@ -24,6 +24,11 @@ Render::Render()
   infoText.setOutlineColor(sf::Color(31, 31, 31));
   infoText.setOutlineThickness(3.f);
 
+  view.setSize(WIDTH, HEIGHT);
+  view.setCenter(WIDTH * 0.5f, HEIGHT * 0.5f);
+  viewStatic.setSize(WIDTH, HEIGHT);
+  viewStatic.setCenter(WIDTH * 0.5f, HEIGHT * 0.5f);
+
   spawner = Spawner(&objects, &vertices, sf::Vector2f(circleTexture.getSize()));
 }
 
@@ -36,18 +41,37 @@ void Render::run() {
 
     sf::Event event;
     while (window.pollEvent(event)) {
-      if (event.type == sf::Event::Closed)
-        window.close();
-
-      if (event.type == sf::Event::KeyReleased)
-        handleKeyReleased(event.key.code);
+      switch (event.type) {
+        case sf::Event::Closed:
+          window.close();
+          break;
+        case sf::Event::KeyReleased:
+          handleKeyReleased(event.key.code);
+          break;
+        case sf::Event::MouseMoved:
+          mouse = sf::Mouse::getPosition(window);
+          break;
+        case sf::Event::MouseButtonPressed:
+          if (event.mouseButton.button == sf::Mouse::Left)
+            mousePressed = sf::Mouse::getPosition(window);
+          break;
+        case sf::Event::MouseWheelScrolled:
+          zoom(-event.mouseWheelScroll.delta);
+          break;
+        default:
+          break;
+      }
     }
+
+    if (!sf::Mouse::isButtonPressed(sf::Mouse::Left))
+      mousePressed = mouse;
 
     deltaTime = clock.restart().asSeconds();
 
     spawner.add(spawnAtOnce);
 
     update(deltaTime);
+    updateView();
 
     window.clear();
     draw();
@@ -83,8 +107,15 @@ void Render::update(float dt) {
   infoText.setString(infoStr);
 }
 
+void Render::updateView() {
+  view.move(sf::Vector2f(mousePressed - mouse) * dragFactor);
+  mousePressed = mouse;
+  window.setView(view);
+}
+
 void Render::draw() {
   window.draw(vertices, &circleTexture);
+  window.setView(viewStatic);
 
   if (showFPS)
     window.draw(fpsText);
@@ -96,6 +127,15 @@ void Render::draw() {
 void Render::reset() {
   solver.reset();
   spawner.reset();
+}
+
+void Render::zoom(float dir) {
+  sf::Vector2f prevSize = view.getSize();
+  view.zoom(1.f + dir * zoomFactor);
+  sf::Vector2f currSize = view.getSize();
+
+  float diff = (currSize.x + currSize.y) / (prevSize.x + prevSize.y);
+  dragFactor *= diff;
 }
 
 void Render::handleKeyReleased(int key) {
